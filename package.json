@@ -5,7 +5,7 @@
   "scripts": {
     "start": "NODE_ENV=development webpack-dev-server",
     "lint": "tslint --project tsconfig.json src/**/*.ts",
-    "test": "NODE_ENV=testing karma start",
+    "test": "NODE_ENV=testing karma start --single-run",
     "build": "NODE_ENV=production webpack",
     "prebuild": "npm run lint && npm run test",
     "webdriver": "webdriver-manager update",
