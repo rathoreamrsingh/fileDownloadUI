@@ -24,27 +24,6 @@ npm start
 ```
 open browser to [`http://localhost:8080`](http://localhost:8080)
 
-
-### Directory Layout
-
-```
-src/                    --> all of the source files for the application
-  assets/               --> stylesheet files, images, etc
-  app/           --> all app specific modules
-    app.module.ts              --> app module declaration
-    app.component.spec.ts      --> "version" value service tests
-    app.component.ts           --> custom directive that returns the current app version
-    app.component.pug          --> pug Template
-    app.component.scss      --> sass style file
-  main.ts                --> main bootstrap application
-  index.pug            --> app layout file (the main pug template file of the app)
-karma.conf.js         --> config file for running unit tests with Karma
-protractor-conf.js    --> Protractor config file
-e2e/            --> end-to-end tests
-  app.po.ts          --> protractor page object file
-  app.e2e-spec.ts    --> jasmine spec foe app module
-```
-
 ### Running Unit Tests
 ```
 npm test
