@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Http, Response } from '@angular/http';
+import { Http, Response, ResponseContentType } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
 
 // Import RxJs required methods
@@ -10,19 +10,52 @@ import 'rxjs/add/operator/catch';
 export class HttpService {
     constructor(private _http: Http) { }
 
-    get() {
+    theReturnOfGet() {
         console.log('get method being called');
-        return this._http.post('http://localhost:8080/file/download2', '', '')
+        return this._http.post('http://localhost:8080/file/download2',{ responseType: ResponseContentType.Blob })
             .map((res: Response) => {
                return res; 
             })
             .subscribe(
                 (data: any) => {
-                    this.downloadFile(data);
+                    this.downloadFileOnceAgain(data);
                 },
                 err => console.log(err), // error
                 () => console.log('getUserStatus Complete') // complete
             );
+    }
+
+    get() { 
+        Observable.create(observer => {
+            
+                        let xhr = new XMLHttpRequest();
+            
+                        xhr.open('POST', 'http://localhost:8080/file/download2', true);
+                        xhr.setRequestHeader('Content-type', 'application/json');
+                        xhr.responseType='blob';
+            
+                        xhr.onreadystatechange = function () {
+                            if (xhr.readyState === 4) {
+                                if (xhr.status === 200) {
+            
+                                    var contentType = 'application/pdf';
+                                    var blob = new Blob([xhr.response], { type: contentType });
+                                    observer.next(blob);
+                                    observer.complete();
+                                } else {
+                                    observer.error(xhr.response);
+                                }
+                            }
+                        }
+                        xhr.send();
+            
+                    }).subscribe(
+                        (data: any) => {
+                            this.theReturnOfDownloadFile(data);
+                        },
+                        err => console.log(err), // error
+                        () => console.log('getUserStatus Complete') // complete
+                    );
     }
 
     private extractData(res: Response) {
@@ -45,8 +78,8 @@ export class HttpService {
             array[i] = data._body.charAt(i);
             //console.log(array[i]);
         }
-        console.log(array.toString());
-        let blob = new Blob([array], { type: 'application/pdf' });
+        //console.log(array.toString());
+        let blob = new Blob([(<any>data)._body], { type: 'application/pdf' });
         let anchor = document.createElement('a');
         anchor.download = 'test.pdf';
 
@@ -60,5 +93,29 @@ export class HttpService {
         //let url= window.URL.createObjectURL(blob);
         
         //window.open(url);
+    }
+
+    private downloadFileOnceAgain(data) {
+        let blob = new Blob([(<any>data)._body], { type: 'application/pdf' });
+        let anchor = document.createElement('a');
+        anchor.download = 'test.pdf';
+
+        let blobtest = new Blob([data._body], {
+            type: data.headers.get("Content-Type")
+        });
+        let blobUrl = (window.URL).createObjectURL(data);
+        
+        anchor.href = blobUrl;
+        anchor.click();
+    }
+
+    private theReturnOfDownloadFile(data) {
+        var downloadUrl= URL.createObjectURL(data);
+        let blobUrl = (window.URL).createObjectURL(data);
+        let anchor = document.createElement('a');
+        anchor.download = 'test.pdf';
+        anchor.href = blobUrl;
+        anchor.click();
+        // window.open(downloadUrl);
     }
 }
