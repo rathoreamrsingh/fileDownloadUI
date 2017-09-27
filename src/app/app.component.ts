@@ -3,15 +3,30 @@ import { HttpService } from './shared/http.service'
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'], 
+  styleUrls: ['./app.component.css'],
   providers: [HttpService]
 })
 export class AppComponent {
-  title = 'app works!';
-  constructor(private _httpService : HttpService) {}
+  title = 'Testing File Download!!!';
+  constructor(private _httpService: HttpService) { }
 
-  public downloadFile(){
-    //alert("starting to download!!!");
-    this._httpService.get();
+  public downloadFileViaGet() {
+    this._httpService.downloadViaGet();
+  }
+
+  public downloadViaPost() {
+    this._httpService.downloadViaFaultyPost();
+  }
+
+  public downloadViaTheReturnOfPost() {
+    this._httpService.downloadViaTheReturnOfPost();
+  }
+
+  public downloadWithTheUltimatePostWithSave() {
+    this._httpService.downloadWithTheUltimatePostWithSave();
+  }
+
+  public andHereComesTheUltimateStressTest() {
+    this._httpService.andHereComesTheUltimateStressTest();
   }
 }

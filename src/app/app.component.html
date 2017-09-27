@@ -1,4 +1,12 @@
-<h1> {{ title }}</h1>
-<a href="downloadFile();">Click here to download file</a>
-<button (click)="downloadFile()">Click me!!!</button>
+<div class="align-everything-center"><h1> {{ title }}</h1></div>
+<div class="align-everything-center">
+    <button (click)="downloadFileViaGet()">Click me for downloading via GET!!!</button>
+    <button (click)="downloadViaPost()">Click me for downloading via Faulty Post Request!!!</button>
+    <button (click)="downloadViaTheReturnOfPost()">Click me for downloading via CORRECT Post Request!!!</button>
+    <button (click)="downloadWithTheUltimatePostWithSave()">Click me for downloading via CORRECT Post and Save via Save API!!!</button>
+
+
+    <br/>
+    <button (click)="andHereComesTheUltimateStressTest()">And Here Comes the ultimate so Called Stress Test!!!</button>
+</div>
 <a href=""></a>

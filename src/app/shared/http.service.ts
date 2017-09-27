@@ -1,121 +1,155 @@
 import { Injectable } from '@angular/core';
-import { Http, Response, ResponseContentType } from '@angular/http';
+import { Http, Response, ResponseContentType, Headers } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
-
+import { saveAs } from 'file-saver/FileSaver';
 // Import RxJs required methods
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 
 @Injectable()
 export class HttpService {
+    private getDownloadLink: string = 'http://localhost:8080/file/downloadViaGet';
+    private postDownloadLink: string = 'http://localhost:8080/file/downloadViaPost';
+    private largeFilePostDownloadLink: string = 'http://localhost:8080/file/download';
+    private downloadContentType: string = 'application/pdf';
+    private largeFileDownloadContentType: string = 'video/x-matroska';
     constructor(private _http: Http) { }
 
-    theReturnOfGet() {
-        console.log('get method being called');
-        return this._http.post('http://localhost:8080/file/download2',{ responseType: ResponseContentType.Blob })
-            .map((res: Response) => {
-               return res; 
-            })
-            .subscribe(
-                (data: any) => {
-                    this.downloadFileOnceAgain(data);
-                },
-                err => console.log(err), // error
-                () => console.log('getUserStatus Complete') // complete
+    downloadViaGet() {
+        this._http.get(this.getDownloadLink, { responseType: ResponseContentType.Blob })
+            .toPromise()
+            .then(response => this.saveToFileSystem(response));
+    }
+
+    downloadViaFaultyPost() {
+        this._http.post(this.postDownloadLink, { responseType: ResponseContentType.Blob })
+            .toPromise()
+            .then(response =>
+                this.saveToFileSystem(response)
             );
     }
 
-    get() { 
+    private saveToFileSystem(response) {
+        const blob = new Blob([response._body], { type: this.downloadContentType });
+        saveAs(blob, 'a.pdf');
+    }
+
+    downloadViaTheReturnOfPost() {
         Observable.create(observer => {
-            
-                        let xhr = new XMLHttpRequest();
-            
-                        xhr.open('POST', 'http://localhost:8080/file/download2', true);
-                        xhr.setRequestHeader('Content-type', 'application/json');
-                        xhr.responseType='blob';
-            
-                        xhr.onreadystatechange = function () {
-                            if (xhr.readyState === 4) {
-                                if (xhr.status === 200) {
-            
-                                    var contentType = 'application/pdf';
-                                    var blob = new Blob([xhr.response], { type: contentType });
-                                    observer.next(blob);
-                                    observer.complete();
-                                } else {
-                                    observer.error(xhr.response);
-                                }
-                            }
-                        }
-                        xhr.send();
-            
-                    }).subscribe(
-                        (data: any) => {
-                            this.theReturnOfDownloadFile(data);
-                        },
-                        err => console.log(err), // error
-                        () => console.log('getUserStatus Complete') // complete
-                    );
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', this.postDownloadLink, true);
+            xhr.setRequestHeader('Content-type', 'application/json');
+            xhr.responseType = 'blob';
+            let that = this;
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+
+                        var contentType = that.downloadContentType;
+                        var blob = new Blob([xhr.response], { type: contentType });
+                        observer.next(blob);
+                        observer.complete();
+                    } else {
+                        observer.error(xhr.response);
+                    }
+                }
+            }
+            xhr.send();
+
+        }).subscribe(
+            (data: any) => {
+                this.andHereComesTheSaviourOfPost(data);
+            },
+            err => console.log(err), // error
+            () => console.log('getUserStatus Complete') // complete
+            );
     }
 
-    private extractData(res: Response) {
-        let body = res.json();
-        return body || {};
-    }
-
-    private handleError(error: any) {
-        let errMsg = (error.message) ? error.message :
-            error.status ? `${error.status} - ${error.statusText}` : 'Server error';
-        console.error(errMsg);
-        return Observable.throw(errMsg);
-    }
-
-    private downloadFile(data) {
-        //data = atob(data);
-        let array = new Uint8Array(data._body.length);
-
-        for(let i = 0; i < data._body.length; i++){
-            array[i] = data._body.charAt(i);
-            //console.log(array[i]);
-        }
-        //console.log(array.toString());
-        let blob = new Blob([(<any>data)._body], { type: 'application/pdf' });
-        let anchor = document.createElement('a');
-        anchor.download = 'test.pdf';
-
-        let blobtest = new Blob([data._body], {
-            type: data.headers.get("Content-Type")
-        });
-        let blobUrl = (window.URL).createObjectURL(blob);
-        
-        anchor.href = blobUrl;
-        anchor.click();
-        //let url= window.URL.createObjectURL(blob);
-        
-        //window.open(url);
-    }
-
-    private downloadFileOnceAgain(data) {
-        let blob = new Blob([(<any>data)._body], { type: 'application/pdf' });
-        let anchor = document.createElement('a');
-        anchor.download = 'test.pdf';
-
-        let blobtest = new Blob([data._body], {
-            type: data.headers.get("Content-Type")
-        });
-        let blobUrl = (window.URL).createObjectURL(data);
-        
-        anchor.href = blobUrl;
-        anchor.click();
-    }
-
-    private theReturnOfDownloadFile(data) {
-        var downloadUrl= URL.createObjectURL(data);
+    private andHereComesTheSaviourOfPost(data) {
+        var downloadUrl = URL.createObjectURL(data);
         let blobUrl = (window.URL).createObjectURL(data);
         let anchor = document.createElement('a');
         anchor.download = 'test.pdf';
         anchor.href = blobUrl;
         anchor.click();
-        // window.open(downloadUrl);
     }
+
+
+    downloadWithTheUltimatePostWithSave() {
+        Observable.create(observer => {
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', this.postDownloadLink, true);
+            xhr.setRequestHeader('Content-type', 'application/json');
+            xhr.responseType = 'blob';
+            let that = this;
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+
+                        var contentType = that.downloadContentType;
+                        var blob = new Blob([xhr.response], { type: contentType });
+                        observer.next(blob);
+                        observer.complete();
+                    } else {
+                        observer.error(xhr.response);
+                    }
+                }
+            }
+            xhr.send();
+
+        }).subscribe(
+            (data: any) => {
+                this.theUltimateSaviourOfPost(data);
+            },
+            err => console.log(err), // error
+            () => console.log('getUserStatus Complete') // complete
+            );
+    }
+
+
+    private theUltimateSaviourOfPost(response) {
+        const blob = new Blob([response], { type: this.downloadContentType });
+        saveAs(blob, 'a.pdf');
+    }
+
+    andHereComesTheUltimateStressTest() {
+        Observable.create(observer => {
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', this.largeFilePostDownloadLink, true);
+            xhr.setRequestHeader('Content-type', 'application/json');
+            xhr.responseType = 'blob';
+            let that = this;
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+
+                        var contentType = that.largeFileDownloadContentType;
+                        var blob = new Blob([xhr.response], { type: contentType });
+                        observer.next(blob);
+                        observer.complete();
+                    } else {
+                        observer.error(xhr.response);
+                    }
+                }
+            }
+            xhr.send();
+
+        }).subscribe(
+            (data: any) => {
+                this.andTheSaviorOfUltimateStressTest(data);
+            },
+            err => console.log(err), // error
+            () => console.log('getUserStatus Complete') // complete
+            );
+    }
+
+    private andTheSaviorOfUltimateStressTest(data) {
+        var downloadUrl = URL.createObjectURL(data);
+        let blobUrl = (window.URL).createObjectURL(data);
+        let anchor = document.createElement('a');
+        anchor.download = 'The_boss_baby.mkv';
+        anchor.href = blobUrl;
+        anchor.click();
+    }
+
 }

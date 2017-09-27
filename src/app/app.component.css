@@ -1,0 +1,9 @@
+h1 {
+  font-size: 48px;
+}
+
+.align-everything-center {
+  text-align: center;
+  vertical-align: middle;
+  line-height: 90px;
+}
